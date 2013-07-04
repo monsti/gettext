@@ -1,0 +1,6 @@
+monsti/gettext - Multi language and multi domain gettext library.
+
+This library is under development and should not be used in production.
+
+It currently supports only languages with two plural forms like english. This is
+considered a bug and will be fixed asap.
