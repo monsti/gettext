@@ -177,6 +177,8 @@ type Locales struct {
 
 // Singular returns the singular translation for the given domain, locale, and
 // message.
+//
+// This function does not load unknown message catalogs.
 func (l *Locales) Singular(domain, locale, msg string) string {
 	l.mutex.RLock()
 	defer l.mutex.RUnlock()
@@ -185,6 +187,8 @@ func (l *Locales) Singular(domain, locale, msg string) string {
 
 // Plural returns the plural translation for the given domain, locale, both
 // singular and plural message, and the number n.
+//
+// This function does not load unknown message catalogs.
 func (l *Locales) Plural(domain, locale, singular, plural string,
 	n int) string {
 	l.mutex.RLock()
