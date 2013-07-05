@@ -185,7 +185,7 @@ func (l *Locales) Singular(domain, locale, msg string) string {
 
 // Plural returns the plural translation for the given domain, locale, both
 // singular and plural message, and the number n.
-func (l Locales) Plural(domain, locale, singular, plural string,
+func (l *Locales) Plural(domain, locale, singular, plural string,
 	n int) string {
 	l.mutex.RLock()
 	defer l.mutex.RUnlock()
