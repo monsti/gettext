@@ -26,7 +26,7 @@ Basic usage:
 	
 	fmt.Println(G("He: Hello World")
 	fmt.Println(GN("World: Hey!", "She: What world, there are %d", n))
-	fmt.Println(GN("gimp", "Refusing to modify this really nice painting."))
+	fmt.Println(GD("gimp", "Refusing to modify this really nice painting."))
 
 	Git, _, _, _ := gettext.DefaultLocales.Use("", "it")
 	fmt.Println(Git("Hello World!")
