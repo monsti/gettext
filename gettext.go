@@ -15,8 +15,8 @@
 // along with monsti/util. If not, see <http://www.gnu.org/licenses/>.
 
 /*
- * This package provides a multi domain and multi language gettext parser.
- * Currently it works only for languages with two plural forms, like English.
+ * Package gettext provides a multi domain and multi language gettext parser.
+ * Currently it only works for languages with two plural forms like English.
  * This is considered a bug and will be fixed asap.
  */
 package gettext
@@ -168,6 +168,7 @@ func parseMO(dir, domain, locale string) (retTr *translation, retErr error) {
 }
 
 // Locales loads and keeps message catalogs and provides translation functions.
+// All methods belonging to Locales are thread safe.
 type Locales struct {
 	translations map[string]map[string]*translation
 	// LocaleDir is the directory to search for unloaded message catalogs.
@@ -179,12 +180,16 @@ type Locales struct {
 	mutex  sync.RWMutex
 }
 
+// Singular returns the singular translation for the given domain, locale, and
+// message.
 func (l *Locales) Singular(domain, locale, msg string) string {
 	l.mutex.RLock()
 	defer l.mutex.RUnlock()
 	return l.translations[domain][locale].Singular(msg)
 }
 
+// Plural returns the plural translation for the given domain, locale, both
+// singular and plural message, and the number n.
 func (l Locales) Plural(domain, locale, singular, plural string,
 	n int) string {
 	l.mutex.RLock()
@@ -192,20 +197,25 @@ func (l Locales) Plural(domain, locale, singular, plural string,
 	return l.translations[domain][locale].Plural(singular, plural, n)
 }
 
-type Singular func(string) string
-type Plural func(string, string, int) string
-type DomainSingular func(string, string) string
-type DomainPlural func(string, string, string, int) string
+// Singular is a function returning a singular translation for the given
+// message. 
+type Singular func(msg string) string
+// Plural is a function returning a plural translation for the given
+// singular and plural message and the number n.
+type Plural func(singular string, plural string, n int) string
+// DomainSingular is like Singular but allows to specify a domain.
+type DomainSingular func(domain string, message string) string
+// DomainPlural is like Plural but allows to specify a domain.
+type DomainPlural func(domain string, singular string, plural string,
+	n int) string
 
-// Use loads the the translation for the given domain and locale and returns the
-// translations functions.
+// Use loads the the translation for the given domain and locale and returns
+// translation functions.
 // Uses the default domain or locale if the corresponding parameter is an empty
 // string.
 //
 // If the given domain and locale has not been loaded before, Use tries to
 // load the corresponding message catalog.
-//
-// Use is thread safe.
 func (l *Locales) Use(domain, locale string) (Singular, Plural,
 	DomainSingular, DomainPlural) {
 	if len(domain) == 0 {
