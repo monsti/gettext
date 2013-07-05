@@ -166,7 +166,7 @@ func parseMO(dir, domain, locale string) (retTr *translation, retErr error) {
 // All methods belonging to Locales are thread safe.
 type Locales struct {
 	translations map[string]map[string]*translation
-	// LocaleDir is the directory to search for unloaded message catalogs.
+	// LocaleDir is the directory to search for message catalogs.
 	LocaleDir string
 	// Locale is the default locale to use.
 	Locale string
