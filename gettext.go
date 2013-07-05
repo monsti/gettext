@@ -14,11 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with monsti/util. If not, see <http://www.gnu.org/licenses/>.
 
-/*
- * Package gettext provides a multi domain and multi language gettext parser.
- * Currently it only works for languages with two plural forms like English.
- * This is considered a bug and will be fixed asap.
- */
 package gettext
 
 import (
