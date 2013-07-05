@@ -153,14 +153,14 @@ func parseMO(dir, domain, locale string) (retTr *translation, retErr error) {
 		msg.Translations = bytes.Split(buffer, []byte{0})
 	}
 	translation := make(translation)
-	for i := range msgs {
-		msg := &msgs[i]
+	for _, msg := range msgs {
 		var plural string
-		if len(msg.Messages) == 0 {
-			error("len(Messages) == 0? %v", msg)
-		}
-		if len(msg.Messages) == 2 {
+		switch len(msg.Messages) {
+		case 1:
+		case 2:
 			plural = string(msg.Messages[1])
+		default:
+			error("There shold be one or to messages.")
 		}
 		translation[message{string(msg.Messages[0]), plural}] = msg.Translations
 	}
