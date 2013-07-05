@@ -56,40 +56,65 @@ func (p parseError) Error() string {
 }
 
 // parseMO parses GetText MO files
-func parseMO(dir, domain, locale string) (*translation, error) {
+func parseMO(dir, domain, locale string) (retTr *translation, retErr error) {
+	defer func() {
+		if r := recover(); r != nil {
+			if e, ok := r.(parseError); ok {
+				retTr = nil
+				retErr = e
+			} else {
+				panic(r)
+			}
+		}
+	}()
 	path := filepath.Join(dir, locale, "LC_MESSAGES", domain+".mo")
 	error := func(msg string, args ...interface{}) {
 		panic(parseError(fmt.Sprintf(msg, args...)))
 	}
+
 	f, err := os.Open(path)
 	if err != nil {
 		error("Could not open message file: %v", err)
 	}
-	bo := binary.LittleEndian
-	var magic, n, msgOff, transOff uint32
-	var major, minor uint16
+
+	// Determine byte ordering
+	var magic [4]byte
+	if _, err := f.Read(magic[:]); err != nil {
+		error("Could not read magic number: %v", err)
+	}
+	var bo binary.ByteOrder
+	switch magic {
+	case [...]byte{0x95, 0x04, 0x12, 0xde}:
+		bo = binary.BigEndian
+	case [...]byte{0xde, 0x12, 0x04, 0x95}:
+		bo = binary.LittleEndian
+	default:
+		error("Unknown file format: magic 0x%x", magic)
+	}
 	try := func(target interface{}, msg string) {
 		if err := binary.Read(f, bo, target); err != nil {
 			error(msg+": %v", err)
 		}
 	}
 
-	try(&magic, "Could not parse magic number")
+	// Parse main variables (n, offsets, major and minor version)
+	var major, minor uint16
 	try(&major, "Could not parse major version")
 	try(&minor, "Could not parse minor version")
-	if (magic != 0x950412de && magic != 0xde120495) || major > 1 || minor > 1 {
-		error("Unknown file format: magic 0x%x, major %d, minor %d",
+	if major > 1 || minor > 1 {
+		error("Unknown file format: major %d, minor %d",
 			magic, major, minor)
 	}
+	var n, msgOff, transOff uint32
 	try(&n, "Could not parse number of strings")
 	try(&msgOff, "Could not parse message offset")
 	try(&transOff, "Could not parse translation offset")
 
+	// Parse the messages and their translations
 	msgs := make([]struct {
 		Length, Offset, TrLength, TrOffset uint32
 		Messages, Translations             [][]byte
 	}, n)
-
 	if _, err := f.Seek(int64(msgOff), 0); err != nil {
 		error("Could not seek message offset: %v", err)
 	}
