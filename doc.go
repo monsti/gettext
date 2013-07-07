@@ -16,8 +16,9 @@
 
 /*
 Package gettext provides a multi domain and multi language gettext parser.
-Currently it only works for languages with two plural forms like English.
-This is considered a bug and will be fixed asap.
+
+It supports languages with different plural forms as specified in the language
+catalog.
 
 Basic usage:
 

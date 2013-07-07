@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 )
 
@@ -29,19 +30,17 @@ type message struct {
 	Singular, Plural string
 }
 
-type translation map[message][][]byte
+type translation struct {
+	msgs map[message][][]byte
+	pf   pluralForm
+}
 
 func (t translation) Singular(msg string) string {
-	return string(t[message{msg, ""}][0])
+	return string(t.msgs[message{msg, ""}][0])
 }
 
 func (t translation) Plural(msg, plural string, n int) string {
-	if n == 1 {
-		return string(t[message{msg, plural}][0])
-	} else {
-		return string(t[message{msg, plural}][1])
-
-	}
+	return string(t.msgs[message{msg, plural}][t.pf(n)])
 }
 
 type parseError string
@@ -147,7 +146,8 @@ func parseMO(dir, domain, locale string) (retTr *translation, retErr error) {
 		try(&buffer, "Could not read translations")
 		msg.Translations = bytes.Split(buffer, []byte{0})
 	}
-	translation := make(translation)
+	var translation translation
+	translation.msgs = make(map[message][][]byte)
 	for _, msg := range msgs {
 		var plural string
 		switch len(msg.Messages) {
@@ -157,7 +157,27 @@ func parseMO(dir, domain, locale string) (retTr *translation, retErr error) {
 		default:
 			error("There shold be one or to messages.")
 		}
-		translation[message{string(msg.Messages[0]), plural}] = msg.Translations
+		translation.msgs[message{string(msg.Messages[0]), plural}] = msg.Translations
+	}
+
+	// Get plural forms function
+	meta := translation.Singular("")
+	begin := strings.Index(meta, "plural= ") + 8
+	if begin != 7 {
+		end := begin + strings.Index(meta[begin:], ";")
+		if end != -1 {
+			exp := meta[begin:end]
+			var parser peParser
+			translation.pf, err = parser.Parse([]byte(exp))
+		}
+	}
+	if translation.pf == nil {
+		translation.pf = func(n int) int {
+			if n == 1 {
+				return 0
+			}
+			return 1
+		}
 	}
 	return &translation, nil
 }
@@ -197,13 +217,16 @@ func (l *Locales) Plural(domain, locale, singular, plural string,
 }
 
 // Singular is a function returning a singular translation for the given
-// message. 
+// message.
 type Singular func(msg string) string
+
 // Plural is a function returning a plural translation for the given
 // singular and plural message and the number n.
 type Plural func(singular string, plural string, n int) string
+
 // DomainSingular is like Singular but allows to specify a domain.
 type DomainSingular func(domain string, message string) string
+
 // DomainPlural is like Plural but allows to specify a domain.
 type DomainPlural func(domain string, singular string, plural string,
 	n int) string

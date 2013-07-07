@@ -1,0 +1,3 @@
+* 2013/07/07
+ - Implemented plural forms parser to support languages with more than two
+   plural forms.

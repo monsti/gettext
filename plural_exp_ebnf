@@ -1,0 +1,14 @@
+# This gettext library supports only a limited variant of the C grammar used to
+# specify plural forms in gettext catalog files. It can parse expressions given
+# by the following grammar (EBNF). The goal is to support any expression used in
+# practice while keeping the parser as small as possible.
+
+expression := ored, [ "?", expression, ":", expression ] ;
+ored = anded, [ "||", ored ] ;
+anded = equality, [ "&&", equality ] ;
+equality = inequality, [ ( "==", "!=" ), inequality ] ;
+inequality = product, [ ( "<" | ">" | "<=" | ">=" ), product ] ;
+product = factor, [ "%" factor ] ;
+factor = "n" | number | "(", expression, ")" ;
+number = digit, { digit } ;
+digit = ( "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ) ;
