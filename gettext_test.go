@@ -40,7 +40,6 @@ func TestSingular(t *testing.T) {
 		t.Errorf(`Translation of "Message" should be "Translated", got %q`,
 			translated)
 	}
-	t.Error(G(""))
 }
 
 func TestPlural(t *testing.T) {
