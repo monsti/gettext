@@ -242,11 +242,11 @@ func (p *peParser) pNumber() pluralForm {
 			}
 		}
 	}
+	r, err := strconv.Atoi(string(number))
+	if err != nil {
+		p.error("Could not parse number %q: %v", number, err)
+	}
 	return func(n int) int {
-		r, err := strconv.Atoi(string(number))
-		if err != nil {
-			p.error("Could not parse number %q: %v", number, err)
-		}
 		return r
 	}
 }
