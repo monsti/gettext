@@ -169,6 +169,9 @@ func parseMO(dir, domain, locale string) (retTr *translation, retErr error) {
 			exp := meta[begin:end]
 			var parser peParser
 			translation.pf, err = parser.Parse([]byte(exp))
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	if translation.pf == nil {
