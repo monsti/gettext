@@ -1,3 +1,5 @@
+* 2013/07/12
+ - Fix crashes caused by unloaded message catalogs.
 * 2013/07/07
  - Implemented plural forms parser to support languages with more than two
    plural forms.
