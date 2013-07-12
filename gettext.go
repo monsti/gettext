@@ -205,7 +205,10 @@ type Locales struct {
 func (l *Locales) Singular(domain, locale, msg string) string {
 	l.mutex.RLock()
 	defer l.mutex.RUnlock()
-	return l.translations[domain][locale].Singular(msg)
+	if t, ok := l.translations[domain][locale]; ok {
+		return t.Singular(msg)
+	}
+	return msg
 }
 
 // Plural returns the plural translation for the given domain, locale, both
@@ -216,7 +219,13 @@ func (l *Locales) Plural(domain, locale, singular, plural string,
 	n int) string {
 	l.mutex.RLock()
 	defer l.mutex.RUnlock()
-	return l.translations[domain][locale].Plural(singular, plural, n)
+	if t, ok := l.translations[domain][locale]; ok {
+		return t.Plural(singular, plural, n)
+	}
+	if n == 1 {
+		return singular
+	}
+	return plural
 }
 
 // Singular is a function returning a singular translation for the given

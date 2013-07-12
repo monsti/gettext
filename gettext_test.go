@@ -33,6 +33,21 @@ func setupLocales(t *testing.T) *Locales {
 	return &locales
 }
 
+func TestNull(t *testing.T) {
+	var locales Locales
+	G, GN, _, _ := locales.Use("test", "de")
+	translated := G("Message")
+	if translated != "Message" {
+		t.Errorf(`Translation of "Message" should be "Message", got %q`,
+			translated)
+	}
+	translated = GN("Singular", "Plural", 2)
+	if translated != "Plural" {
+		t.Errorf(`Translation of "Singular", "Plural", 2 should be "Plural", got %q`,
+			translated)
+	}
+}
+
 func TestSingular(t *testing.T) {
 	G, _, _, _ := setupLocales(t).Use("test", "de")
 	translated := G("Message")
