@@ -35,12 +35,25 @@ type translation struct {
 	pf   pluralForm
 }
 
-func (t translation) Singular(msg string) string {
-	return string(t.msgs[message{msg, ""}][0])
+func (t *translation) Singular(msg string) string {
+	if t != nil {
+		if ret, ok := t.msgs[message{msg, ""}]; ok {
+			return string(ret[0])
+		}
+	}
+	return msg
 }
 
-func (t translation) Plural(msg, plural string, n int) string {
-	return string(t.msgs[message{msg, plural}][t.pf(n)])
+func (t *translation) Plural(msg, plural string, n int) string {
+	if t != nil {
+		if ret, ok := t.msgs[message{msg, plural}]; ok {
+			return string(ret[t.pf(n)])
+		}
+		if n == 1 {
+			return msg
+		}
+	}
+	return plural
 }
 
 type parseError string
@@ -205,10 +218,7 @@ type Locales struct {
 func (l *Locales) Singular(domain, locale, msg string) string {
 	l.mutex.RLock()
 	defer l.mutex.RUnlock()
-	if t, ok := l.translations[domain][locale]; ok {
-		return t.Singular(msg)
-	}
-	return msg
+	return l.translations[domain][locale].Singular(msg)
 }
 
 // Plural returns the plural translation for the given domain, locale, both
@@ -219,13 +229,7 @@ func (l *Locales) Plural(domain, locale, singular, plural string,
 	n int) string {
 	l.mutex.RLock()
 	defer l.mutex.RUnlock()
-	if t, ok := l.translations[domain][locale]; ok {
-		return t.Plural(singular, plural, n)
-	}
-	if n == 1 {
-		return singular
-	}
-	return plural
+	return l.translations[domain][locale].Plural(singular, plural, n)
 }
 
 // Singular is a function returning a singular translation for the given

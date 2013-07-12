@@ -55,6 +55,11 @@ func TestSingular(t *testing.T) {
 		t.Errorf(`Translation of "Message" should be "Translated", got %q`,
 			translated)
 	}
+	translated = G("Unknown Message")
+	if translated != "Unknown Message" {
+		t.Errorf(`Translation of "Unknown Message" should be "Unknown Message", got %q`,
+			translated)
+	}
 }
 
 func TestPlural(t *testing.T) {
@@ -64,6 +69,8 @@ func TestPlural(t *testing.T) {
 		N                int
 		Translated       string
 	}{
+		{"Unknown Singular", "Plural", 1, "Unknown Singular"},
+		{"Unknown Singular", "Plural", 2, "Plural"},
 		{"Singular", "Plural", 0, "Translated Plural"},
 		{"Singular", "Plural", 1, "Translated Singular"},
 		{"Singular", "Plural", 3, "Translated Second Plural"},
